@@ -218,13 +218,18 @@ int main(int argc, char **argv)
                         regData.registers[rd] = (regData.registers[rs] < regData.registers[rt]) ? 1 : 0;
                         break;
                     case FUN_SLL: 
-
+                        regData.registers[rd] = regData.registers[rt] << shamt;
+                        break;
                     case FUN_SRL: 
-
+                        regData.registers[rd] = regData.registers[rt] >> shamt;
+                        break;
                     case FUN_SUB:  
-                    
+                        regData.registers[rd] = regData.registers[rs] + (~regData.registers[rt] + 1);
+                        err = checkOverflow(regData.registers[rd], regData.registers[rs], regData.registers[rt]);
+                        break;
                     case FUN_SUBU: 
-
+                        regData.registers[rd] = regData.registers[rs] + (~regData.registers[rt] + 1);
+                        break;
                     default:
                         fprintf(stderr, "\tIllegal operation...\n");
                         err = true;
