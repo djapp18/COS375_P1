@@ -84,6 +84,39 @@ uint32_t signExt(uint16_t smol)
     return (smol & 0x8000) ? x ^ extension : x;
 }
 
+// zero extend input
+uint32_t zeroSignExt(uint16_t smol) 
+{
+    uint32_t x = smol;
+    return x;
+}
+
+// determine branch address while keeping values as uint's
+uint32_t branchAddress(uint16_t smol) 
+{
+    uint32_t x = smol;
+    uint32_t extension = 0xffff0000;
+    uint32_t extended_x = (smol & 0x8000) ? x ^ extension : x;
+    return extended_x << 2;
+}
+
+// check overflow
+bool checkOverflow(uint32_t sum, uint32_t operandRS, uint32_t operandRT) {
+
+    // check parities for overflow conditions
+    bool rsNegative = operandRS & 0x80000000;
+    bool rtNegative = operandRT & 0x80000000;
+    bool sumNegative = sum & 0x80000000;
+
+    // find overflow and print an error
+    if ((rsNegative & rtNegative & !sumNegative) || (!rsNegative & !rtNegative & sumNegative)) {
+        fprintf(stderr, "\tOverflow occured...\n");
+        return true;
+    }
+
+    return false;
+}
+
 // dump registers and memory
 // change so registers is a union with reg. No copying of reg to registers - should not be hard
 void dump(MemoryStore *myMem) {
@@ -151,30 +184,39 @@ int main(int argc, char **argv)
         uint32_t address = instructBits(instruct, 25, 0);
 
         int32_t signExtImm = signExt(immediate);
-        uint32_t zeroExtImm = 
-        uint32_t branchAddr = 
-        uint32_t fallthruAddr = // assumes PC += 4 just happened
+        uint32_t zeroExtImm = zeroSignExt(immediate);
+        uint32_t branchAddr = branchAddress(immediate);
+        uint32_t fallthruAddr = pc; // assumes PC += 4 just happened
 
         // fill in operations for all functions and operands. Account for overflow where necessary.
         switch(opcode) {
             case OP_ZERO: // R-type instruction 
                 switch(funct) {
-                    case FUN_ADD:                         
-
+                    case FUN_ADD:    
+                        regData.registers[rd] = regData.registers[rs] + regData.registers[rt];
+                        err = checkOverflow(regData.registers[rd], regData.registers[rs], regData.registers[rt]);
+                        break;
                     case FUN_ADDU: 
-
+                        regData.registers[rd] = regData.registers[rs] + regData.registers[rt];
+                        break;
                     case FUN_AND: 
-
+                        regData.registers[rd] = regData.registers[rs] & regData.registers[rt];
+                        break;
                     case FUN_JR: 
-
+                        pc = regData.registers[rs];
+                        break;
                     case FUN_NOR: 
-
+                        regData.registers[rd] = !(regData.registers[rs] ^ regData.registers[rt]);
+                        break;
                     case FUN_OR: 
-
+                        regData.registers[rd] = regData.registers[rs] ^ regData.registers[rt];
+                        break;
                     case FUN_SLT: 
-
+                        regData.registers[rd] = ((int32_t) regData.registers[rs] < (int32_t) regData.registers[rt]) ? 1 : 0;
+                        break;
                     case FUN_SLTU: 
-
+                        regData.registers[rd] = (regData.registers[rs] < regData.registers[rt]) ? 1 : 0;
+                        break;
                     case FUN_SLL: 
 
                     case FUN_SRL: 
@@ -191,8 +233,6 @@ int main(int argc, char **argv)
 
             case OP_ADDI: 
                 regData.registers[rt] = regData.registers[rs] + signExtImm;
-
-
                 break;                
             case OP_ADDIU: 
                 regData.registers[rt] = regData.registers[rs] + signExtImm;
