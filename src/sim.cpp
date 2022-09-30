@@ -10,6 +10,7 @@
 // OP_IDS: how to find opcode of blez etc.
 // ZeroExtend and BranchExtend: how to pad zeros to the left/right?
 // overflow flag?
+ // make sure to implement logic about executign instruction immediately afterwards
 
 using namespace std;
 
@@ -21,7 +22,7 @@ union REGS
 
 union REGS regData;
 
-// fill in the missing hex values of OP_IDs
+// IMPORTANT: fill in the missing hex values of OP_IDs!!!!!!!!!!!!!!
 enum OP_IDS
 {
     //R-type opcodes...
@@ -89,6 +90,15 @@ uint32_t zeroSignExt(uint16_t smol)
 {
     uint32_t x = smol;
     return x;
+}
+
+// determine branch address while keeping values as uint's
+uint32_t branchAddress(uint16_t smol) 
+{
+    uint32_t x = smol;
+    uint32_t extension = 0xffff0000;
+    uint32_t extended_x = (smol & 0x8000) ? x ^ extension : x;
+    return extended_x << 2;
 }
 
 // determine branch address while keeping values as uint's
@@ -238,20 +248,27 @@ int main(int argc, char **argv)
 
             case OP_ADDI: 
                 regData.registers[rt] = regData.registers[rs] + signExtImm;
+                err = checkOverflow(regData.registers[rd], regData.registers[rs], signExtImm);
                 break;                
             case OP_ADDIU: 
                 regData.registers[rt] = regData.registers[rs] + signExtImm;
                 break;
             case OP_ANDI: 
-
-            case OP_BEQ: 
+                regData.registers[rt] = regData.registers[rs] & zeroExtImm;
+                break;
+            case OP_BEQ: // make sure to implement logic about executign instruction immediately afterwards
                 
             case OP_BNE: 
                 
             case OP_J: 
-                
+                uint32_t extend_address = address << 2;  
+                uint32_t region = instructBits(pc, 31, 28) << 28;
+                pc = extend_address ^ region;
             case OP_JAL: 
-                
+                regData.registers[31] = pc + 4;
+                uint32_t extend_address = address << 2;  
+                uint32_t region = instructBits(pc, 31, 28) << 28;
+                pc = extend_address ^ region; 
             case OP_LBU: 
 
             case OP_LHU: 
