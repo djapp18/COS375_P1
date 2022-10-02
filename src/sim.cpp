@@ -69,7 +69,7 @@ enum FUNCT_IDS
 };
 
 // extract specific bits [start, end] from an instruction
-uint instructBits(uint32_t instruct, int start, int end)
+uint32_t instructBits(uint32_t instruct, int start, int end)
 {
     int run = start - end + 1;
     uint32_t mask = (1 << run) - 1;
@@ -90,15 +90,6 @@ uint32_t zeroSignExt(uint16_t smol)
 {
     uint32_t x = smol;
     return x;
-}
-
-// determine branch address while keeping values as uint's
-uint32_t branchAddress(uint16_t smol) 
-{
-    uint32_t x = smol;
-    uint32_t extension = 0xffff0000;
-    uint32_t extended_x = (smol & 0x8000) ? x ^ extension : x;
-    return extended_x << 2;
 }
 
 // determine branch address while keeping values as uint's
@@ -257,38 +248,68 @@ int main(int argc, char **argv)
                 regData.registers[rt] = regData.registers[rs] & zeroExtImm;
                 break;
             case OP_BEQ: // make sure to implement logic about executign instruction immediately afterwards
-                
+                if(regData.registers[rs] == regData.registers[rt]) {
+                    pc += branchAddr;
+                }
+                break;
             case OP_BNE: 
-                
+                if(regData.registers[rs] != regData.registers[rt]) {
+                    pc += branchAddr;
+                }
+                break;      
             case OP_J: 
                 uint32_t extend_address = address << 2;  
                 uint32_t region = instructBits(pc, 31, 28) << 28;
                 pc = extend_address ^ region;
+                break;
             case OP_JAL: 
                 regData.registers[31] = pc + 4;
                 uint32_t extend_address = address << 2;  
                 uint32_t region = instructBits(pc, 31, 28) << 28;
                 pc = extend_address ^ region; 
+                break;
             case OP_LBU: 
-
+                uint32_t addr = regData.registers[rs] + signExtImm;
+                uint32_t value = 0;
+                myMem->getMemValue(addr, value, BYTE_SIZE);
+                regData.registers[rt] = value;
+                break;
             case OP_LHU: 
-               
+                uint32_t addr = regData.registers[rs] + signExtImm;
+                uint32_t value = 0;
+                myMem->getMemValue(addr, value, HALF_SIZE);
+                regData.registers[rt] = value;
+                break;
             case OP_LUI: 
-                
+                regData.registers[rt] = immediate << 16;    
+                break;   
             case OP_LW: 
-                
+                uint32_t addr = regData.registers[rs] + signExtImm;
+                uint32_t value = 0;
+                myMem->getMemValue(addr, value, WORD_SIZE);
+                regData.registers[rt] = value;  
+                break;         
             case OP_ORI: 
-                
+                regData.registers[rt] = regData.registers[rs] | zeroExtImm;
+                break;
             case OP_SLTI: 
-                
+                regData.registers[rd] = ((int32_t) regData.registers[rs] < (int32_t) signExtImm) ? 1 : 0;
+                break;
             case OP_SLTIU: 
-                
+                regData.registers[rd] = (regData.registers[rs] < signExtImm) ? 1 : 0;
+                break;
             case OP_SB: 
-                
+                uint32_t addr = regData.registers[rs] + signExtImm;
+                myMem->setMemValue(addr, regData.registers[rt], BYTE_SIZE);
+                break;
             case OP_SH: 
-               
+                uint32_t addr = regData.registers[rs] + signExtImm;
+                myMem->setMemValue(addr, regData.registers[rt], HALF_SIZE); 
+                break;
             case OP_SW: 
-                
+                uint32_t addr = regData.registers[rs] + signExtImm;
+                myMem->setMemValue(addr, regData.registers[rt], WORD_SIZE) ;  
+                break;
             case OP_BLEZ: 
                 
             case OP_BGTZ: 
