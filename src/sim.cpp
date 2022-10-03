@@ -7,10 +7,7 @@
 #include "MemoryStore.h"
 #include "RegisterInfo.h"
 
-// OP_IDS: how to find opcode of blez etc.
-// ZeroExtend and BranchExtend: how to pad zeros to the left/right?
-// overflow flag?
- // make sure to implement logic about executign instruction immediately afterwards
+// left shift signExt by 4?
 
 using namespace std;
 
@@ -22,7 +19,6 @@ union REGS
 
 union REGS regData;
 
-// IMPORTANT: fill in the missing hex values of OP_IDs!!!!!!!!!!!!!!
 enum OP_IDS
 {
     //R-type opcodes...
@@ -44,8 +40,8 @@ enum OP_IDS
     OP_SC = 0x38, // sc
     OP_SH = 0x29, // sh
     OP_SW = 0x2b, // sw
-    OP_BLEZ = 0x, // blez
-    OP_BGTZ = 0x, // bgtz
+    OP_BLEZ = 0x6, // blez
+    OP_BGTZ = 0x7, // bgtz
     //J-type opcodes...
     OP_J = 0x2, // j
     OP_JAL = 0x3 // jal
@@ -204,7 +200,8 @@ int main(int argc, char **argv)
                         regData.registers[rd] = regData.registers[rs] & regData.registers[rt];
                         break;
                     case FUN_JR: 
-                        pc = regData.registers[rs];
+                        branchDelay = true;
+                        branchTarget = regData.registers[rs];
                         break;
                     case FUN_NOR: 
                         regData.registers[rd] = !(regData.registers[rs] ^ regData.registers[rt]);
@@ -249,24 +246,28 @@ int main(int argc, char **argv)
                 break;
             case OP_BEQ: // make sure to implement logic about executign instruction immediately afterwards
                 if(regData.registers[rs] == regData.registers[rt]) {
-                    pc += branchAddr;
+                    branchDelay = true;
+                    branchTarget = pc + branchAddr;
                 }
                 break;
             case OP_BNE: 
                 if(regData.registers[rs] != regData.registers[rt]) {
-                    pc += branchAddr;
+                    branchDelay = true;
+                    branchTarget = pc + branchAddr;
                 }
                 break;      
             case OP_J: 
+                branchDelay = true;
                 uint32_t extend_address = address << 2;  
                 uint32_t region = instructBits(pc, 31, 28) << 28;
-                pc = extend_address ^ region;
+                branchTarget = extend_address ^ region;
                 break;
-            case OP_JAL: 
+            case OP_JAL:
+                branchDelay = true; 
                 regData.registers[31] = pc + 4;
                 uint32_t extend_address = address << 2;  
                 uint32_t region = instructBits(pc, 31, 28) << 28;
-                pc = extend_address ^ region; 
+                branchTarget = extend_address ^ region;
                 break;
             case OP_LBU: 
                 uint32_t addr = regData.registers[rs] + signExtImm;
@@ -293,10 +294,10 @@ int main(int argc, char **argv)
                 regData.registers[rt] = regData.registers[rs] | zeroExtImm;
                 break;
             case OP_SLTI: 
-                regData.registers[rd] = ((int32_t) regData.registers[rs] < (int32_t) signExtImm) ? 1 : 0;
+                regData.registers[rt] = ((int32_t) regData.registers[rs] < (int32_t) signExtImm) ? 1 : 0;
                 break;
             case OP_SLTIU: 
-                regData.registers[rd] = (regData.registers[rs] < signExtImm) ? 1 : 0;
+                regData.registers[rt] = (regData.registers[rs] < signExtImm) ? 1 : 0;
                 break;
             case OP_SB: 
                 uint32_t addr = regData.registers[rs] + signExtImm;
@@ -311,14 +312,28 @@ int main(int argc, char **argv)
                 myMem->setMemValue(addr, regData.registers[rt], WORD_SIZE) ;  
                 break;
             case OP_BLEZ: 
-                
+                if(regData.registers[rs] <= 0) {
+                    branchDelay = true;
+                    branchTarget = pc + branchAddr;
+                }
+                break;   
             case OP_BGTZ: 
-                
+                if(regData.registers[rs] > 0) {
+                    branchDelay = true;
+                    branchTarget = pc + branchAddr;
+                }
+                break;
             default:
                 fprintf(stderr, "\tIllegal operation...\n");
                 err = true;
                 break;
         }
+
+        if(branchDelay) {
+            pc = branchTarget;
+            branchDelay = false;
+        }
+
     }
 
     // dump and exit with error
