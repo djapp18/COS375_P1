@@ -273,40 +273,46 @@ int main(int argc, char **argv)
                 }
                 break;      
             }
-            case OP_J: 
+            case OP_J:{
                 branchDelay = true;
                 uint32_t extend_address = address << 2;  
                 uint32_t region = instructBits(pc, 31, 28) << 28;
                 branchTarget = extend_address ^ region;
                 break;
-            case OP_JAL:
+	    }
+            case OP_JAL:{
                 branchDelay = true; 
-                //regData.registers[31] = pc + 4;
+                regData.registers[31] = pc + 4;
                 uint32_t extend_address = address << 2;  
                 uint32_t region = instructBits(pc, 31, 28) << 28;
                 branchTarget = extend_address ^ region;
                 break;
-            case OP_LBU: 
+	    }
+	    case OP_LBU:{ 
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 uint32_t value = 0;
                 myMem->getMemValue(addr, value, BYTE_SIZE);
                 regData.registers[rt] = value;
                 break;
-            case OP_LHU: 
+	    }
+            case OP_LHU:{ 
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 uint32_t value = 0;
                 myMem->getMemValue(addr, value, HALF_SIZE);
                 regData.registers[rt] = value;
                 break;
-            case OP_LUI: 
+	    }
+            case OP_LUI:{
                 regData.registers[rt] = immediate << 16;    
-                break;   
-            case OP_LW: 
+                break;  
+	    }	
+            case OP_LW:{ 
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 uint32_t value = 0;
                 myMem->getMemValue(addr, value, WORD_SIZE);
                 regData.registers[rt] = value;  
-                break;         
+                break;  
+	    }	
             case OP_ORI: 
                 regData.registers[rt] = regData.registers[rs] | zeroExtImm;
                 break;
@@ -316,18 +322,21 @@ int main(int argc, char **argv)
             case OP_SLTIU: 
                 regData.registers[rt] = (regData.registers[rs] < signExtImm) ? 1 : 0;
                 break;
-            case OP_SB: 
+            case OP_SB:{ 
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 myMem->setMemValue(addr, regData.registers[rt], BYTE_SIZE);
                 break;
-            case OP_SH: 
+	    }
+            case OP_SH:{ 
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 myMem->setMemValue(addr, regData.registers[rt], HALF_SIZE); 
                 break;
-            case OP_SW: 
+	    }
+            case OP_SW:{ 
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 myMem->setMemValue(addr, regData.registers[rt], WORD_SIZE) ;  
                 break;
+	    }
             case OP_BLEZ: 
                 if(regData.registers[rs] <= 0) {
                     branchDelay = true;
