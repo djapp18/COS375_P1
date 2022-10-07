@@ -8,11 +8,6 @@
 #include "RegisterInfo.h"
 #include "EndianHelpers.h"
 
-// fallthroughaddress
-// endianness - 
-// failing daras extra test on line 78
-// jal, jr, j, lbu, beq, sh, lui, srl, subu - no unit tests yet 
-
 using namespace std;
 
 union REGS 
@@ -153,9 +148,10 @@ int main(int argc, char **argv)
     uint32_t pc = 0; // initialize pc
     bool err = false;
 
-    // branch delay - why diff branch and jal delay
+    // branch delay
+    // secondDelay represents a buffered Boolean variable to enable delay slot functionality
     bool branchDelay, jalDelay, secondDelay = false;
-    // branchTarget - Tagregt of branch taken
+    // branchTarget - Target of branch taken
     // jal_valueToStore -  return address to be stores in reg 31 for JAL instruction
     uint32_t branchTarget, jal_valueToStore = 0;
 
@@ -173,6 +169,7 @@ int main(int argc, char **argv)
             return 0;
         }
 
+        // if branch or jump is triggered, use secondDelay as a method of implementing delay slot
         if(branchDelay) {
             secondDelay = true;
         }
@@ -267,7 +264,7 @@ int main(int argc, char **argv)
                 regData.registers[rt] = regData.registers[rs] & zeroExtImm;
                 break;
             }
-            case OP_BEQ:{ // make sure to implement logic about executign instruction immediately afterwards
+            case OP_BEQ:{
                 if(regData.registers[rs] == regData.registers[rt]) {
                     branchDelay = true;
                     branchTarget = pc + branchAddr;
@@ -287,7 +284,7 @@ int main(int argc, char **argv)
                 uint32_t region = instructBits(pc, 31, 28) << 28;
                 branchTarget = extend_address | region;
                 break;
-	    }
+	        }
             case OP_JAL:{
                 branchDelay = true; 
                 regData.registers[31] = pc + 4;
@@ -295,32 +292,32 @@ int main(int argc, char **argv)
                 uint32_t region = instructBits(pc, 31, 28) << 28;
                 branchTarget = extend_address | region;
                 break;
-	    }
-	    case OP_LBU:{ 
+	        }
+	        case OP_LBU:{ 
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 uint32_t value = 0;
                 myMem->getMemValue(addr, value, BYTE_SIZE);
                 regData.registers[rt] = value;
                 break;
-	    }
+	        }
             case OP_LHU:{ 
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 uint32_t value = 0;
                 myMem->getMemValue(addr, value, HALF_SIZE);
                 regData.registers[rt] = value;
                 break;
-	    }
+	        }
             case OP_LUI:{
                 regData.registers[rt] = immediate << 16;    
                 break;  
-	    }	
+	        }	
             case OP_LW:{ 
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 uint32_t value = 0;
                 myMem->getMemValue(addr, value, WORD_SIZE);
                 regData.registers[rt] = value;  
                 break;  
-	    }	
+	        }	
             case OP_ORI: 
                 regData.registers[rt] = regData.registers[rs] | zeroExtImm;
                 break;
@@ -334,25 +331,17 @@ int main(int argc, char **argv)
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 myMem->setMemValue(addr, regData.registers[rt], BYTE_SIZE);
                 break;
-	    }
+	        }
             case OP_SH:{ 
-//            LHU
-//                uint32_t addr = regData.registers[rs] + signExtImm;
-//                uint32_t value = 0;
-//                myMem->getMemValue(addr, value, HALF_SIZE);
-//                regData.registers[rt] = value;
-//                break;
-
-//            SH
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 myMem->setMemValue(addr, regData.registers[rt], HALF_SIZE); 
                 break;
-	    }
+	        }
             case OP_SW:{ 
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 myMem->setMemValue(addr, regData.registers[rt], WORD_SIZE) ;  
                 break;
-	    }
+	        }
             case OP_BLEZ: 
                 if(regData.registers[rs] <= 0) {
                     branchDelay = true;
@@ -371,6 +360,7 @@ int main(int argc, char **argv)
                 break;
         }
 
+        // Execute branch/jump following delay slot functionality
         if(secondDelay) {
             pc = branchTarget;
             branchDelay = false;
