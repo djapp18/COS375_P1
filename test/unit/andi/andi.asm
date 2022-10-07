@@ -1,6 +1,6 @@
 # The following lines test AND
-main: la    $s0, 28
-      la    $s1, 32
+main: la    $s0, 24
+      la    $s1, 28
       lw    $t1, 0($s0)
       lw    $t2, 0($s1)
       andi   $t0, $t1, 0x00ff

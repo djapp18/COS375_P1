@@ -212,11 +212,11 @@ int main(int argc, char **argv)
                         break;
                     }
                     case FUN_NOR:{ 
-                        regData.registers[rd] = !(regData.registers[rs] ^ regData.registers[rt]);
+                        regData.registers[rd] = !(regData.registers[rs] | regData.registers[rt]);
                         break;
                     }
                     case FUN_OR:{ 
-                        regData.registers[rd] = regData.registers[rs] ^ regData.registers[rt];
+                        regData.registers[rd] = regData.registers[rs] | regData.registers[rt];
                         break;
                     }
                     case FUN_SLT:{ 
