@@ -332,6 +332,14 @@ int main(int argc, char **argv)
                 break;
 	    }
             case OP_SH:{ 
+            LHU
+                uint32_t addr = regData.registers[rs] + signExtImm;
+                uint32_t value = 0;
+                myMem->getMemValue(addr, value, HALF_SIZE);
+                regData.registers[rt] = value;
+                break;
+
+            SH
                 uint32_t addr = regData.registers[rs] + signExtImm;
                 myMem->setMemValue(addr, regData.registers[rt], HALF_SIZE); 
                 break;
