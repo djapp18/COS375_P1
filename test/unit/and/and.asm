@@ -1,11 +1,12 @@
 # The following lines test AND
-main: la    $s0, 24
-      la    $s1, 28
+main: la    $s0, 32
+      la    $s1, 36
       lw    $t1, 0($s0)
       lw    $t2, 0($s1)
       and   $t0, $t1, $t2
+      nop
       .word 0xfeedfeed
-cnst: .word 0xaaaa
+cnst: .word 0xabcd
       .word 0x0001
 
 # jmp:  addi  $ra, $ra, 8       # add 8 to $ra so that when jr is called, pc is set to the next address
