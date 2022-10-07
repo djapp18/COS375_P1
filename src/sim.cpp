@@ -11,7 +11,7 @@
 // fallthroughaddress
 // endianness - 
 // failing daras extra test on line 78
-// 
+// jal, jr, j, lbu, beq, sh, lui, srl, subu - no unit tests yet 
 
 using namespace std;
 
@@ -283,7 +283,7 @@ int main(int argc, char **argv)
                 branchDelay = true;
                 uint32_t extend_address = address << 2;  
                 uint32_t region = instructBits(pc, 31, 28) << 28;
-                branchTarget = extend_address ^ region;
+                branchTarget = extend_address | region;
                 break;
 	    }
             case OP_JAL:{
@@ -291,7 +291,7 @@ int main(int argc, char **argv)
                 regData.registers[31] = pc + 4;
                 uint32_t extend_address = address << 2;  
                 uint32_t region = instructBits(pc, 31, 28) << 28;
-                branchTarget = extend_address ^ region;
+                branchTarget = extend_address | region;
                 break;
 	    }
 	    case OP_LBU:{ 
