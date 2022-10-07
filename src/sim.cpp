@@ -267,8 +267,6 @@ int main(int argc, char **argv)
                 if(regData.registers[rs] == regData.registers[rt]) {
                     branchDelay = true;
                     branchTarget = pc + branchAddr;
-                } else {
-                    pc = pc + 4;
                 }
                 break;
             }
