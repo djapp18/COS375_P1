@@ -2,28 +2,14 @@
 main: jal   jmp               # set pc to next address and $ra to the next address
 jmp:  addi  $ra, $ra, 8       # add 8 to $ra so that when jr is called, pc is set to the next address
       jr    $ra               # set pc to the next address
-      la    $s0, 116          # address of binary value 1100 1010 1111 0110
-      la    $s1, 120          # address of checkpoint
+      la    $s0, 60          # address of binary value 1100 1010 1111 0110
+      la    $s1, 64          # address of checkpoint
       lbu   $s2, 2($s0)       # $s2 = 1100 1010 = 0xca = 202
       lbu   $s3, 3($s0)       # $s3 = 1111 0110 = 0xf6 = 246
       and   $t0, $s2, $s3     # $t0 = 1100 0010 = 0xc2 = 194
       andi  $t1, $s2, 65465   # $t1 = 1000 1000
       andi  $t2, $s2, 185     # $t2 = 1000 1000
-      nop
-      nop
-      nop
-      nop
-      nop
-      nop
-      nop
-      nop
-      nop
-      nop
-      nop
-      nop
-      nop
-      nop
-      nop
+      .word 0xfeedfeed
 #       beq   $t1, $t2, cp      # goto checkpoint (the 8 least significant bits of 185 and 65465 = 1011 1001)
 # rtn1: sll   $t0, $t0, 8       # $t0 = 1100 0010 0000 0000 = 0xc200
 #       or    $t0, $t0, $t1     # $t0 = 1100 0010 1000 1000 = 0xc288
