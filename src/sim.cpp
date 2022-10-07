@@ -82,7 +82,7 @@ uint32_t signExt(uint16_t smol)
 {
     uint32_t x = smol;
     uint32_t extension = 0xffff0000;
-    return (smol & 0x8000) ? x ^ extension : x;
+    return (smol & 0x8000) ? x | extension : x;
 }
 
 // zero extend input
@@ -97,7 +97,7 @@ uint32_t branchAddress(uint16_t smol)
 {
     uint32_t x = smol;
     uint32_t extension = 0xffff0000;
-    uint32_t extended_x = (smol & 0x8000) ? x ^ extension : x;
+    uint32_t extended_x = (smol & 0x8000) ? x | extension : x;
     return extended_x << 2;
 }
 
