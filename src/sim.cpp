@@ -154,7 +154,7 @@ int main(int argc, char **argv)
     bool err = false;
 
     // branch delay - why diff branch and jal delay
-    bool branchDelay, jalDelay = false;
+    bool branchDelay, jalDelay, secondDelay = false;
     // branchTarget - Tagregt of branch taken
     // jal_valueToStore -  return address to be stores in reg 31 for JAL instruction
     uint32_t branchTarget, jal_valueToStore = 0;
@@ -171,6 +171,10 @@ int main(int argc, char **argv)
         if (instruct == 0xfeedfeed) {
             dump(myMem);
             return 0;
+        }
+
+        if(branchDelay) {
+            secondDelay = true;
         }
 
         // parse instruction 
@@ -367,9 +371,10 @@ int main(int argc, char **argv)
                 break;
         }
 
-        if(branchDelay) {
+        if(secondDelay) {
             pc = branchTarget;
             branchDelay = false;
+            secondDelay = false;
         }
 
     }
