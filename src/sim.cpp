@@ -144,7 +144,7 @@ int main(int argc, char **argv)
     int memLength = length / sizeof(buf[0]);
     int i;
     for (i = 0; i < memLength; i++) {
-        myMem->setMemValue(i * BYTE_SIZE, ConvertWordToBigEndian(buf[i]), BYTE_SIZE);
+      myMem->setMemValue(i * BYTE_SIZE, buf[i], BYTE_SIZE);
     }
 
     regData.reg = {};
