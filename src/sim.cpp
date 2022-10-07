@@ -8,6 +8,10 @@
 #include "RegisterInfo.h"
 
 // left shift signExt by 4?
+// fallthroughaddress
+// endianness - 
+// failing daras extra test on line 78
+// 
 
 using namespace std;
 
@@ -263,6 +267,8 @@ int main(int argc, char **argv)
                 if(regData.registers[rs] == regData.registers[rt]) {
                     branchDelay = true;
                     branchTarget = pc + branchAddr;
+                } else {
+                    pc = pc + 4;
                 }
                 break;
             }
