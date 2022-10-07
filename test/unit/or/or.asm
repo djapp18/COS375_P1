@@ -3,7 +3,7 @@ main: la    $s0, 28
       la    $s1, 32
       lw    $t1, 0($s0)
       lw    $t2, 0($s1)
-      and   $t0, $t1, $t2
+      or   $t0, $t1, $t2
       .word 0xfeedfeed
 cnst: .word 0xf0f0
       .word 0x0ff0
